@@ -1,5 +1,5 @@
 -- ============================================================================
--- SKID LIB (REWORKED CLEAN UI ENGINE WITH CUSTOM LOADING SCREEN)
+-- SKID LIB (INSTANT LOADING SCREEN FIX)
 -- ============================================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -78,70 +78,84 @@ local ScreenGui = Create("ScreenGui", {
     Parent = ParentContainer
 })
 
--- Animated Curveless Green Line Loader
-local function PlayLoadingScreen(titleText, onComplete)
-    local Loader = Create("Frame", {
+-- FORCED STANDALONE LOADING SCREEN
+local function ShowLoadingScreen(titleText, onComplete)
+    local Overlay = Create("Frame", {
         Parent = ScreenGui,
-        Size = UDim2.new(0, 260, 0, 70),
-        Position = UDim2.new(0.5, -130, 0.5, -35),
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(8, 9, 12),
+        BackgroundTransparency = 0,
+        ZIndex = 1000
+    })
+
+    local Loader = Create("Frame", {
+        Parent = Overlay,
+        Size = UDim2.new(0, 280, 0, 80),
+        Position = UDim2.new(0.5, -140, 0.5, -40),
         BackgroundColor3 = Skid.Theme.Background,
         BorderSizePixel = 0,
-        ZIndex = 500
+        ZIndex = 1001
     }, {
         Create("UIStroke", { Color = Skid.Theme.Border, Thickness = 1 }),
         Create("TextLabel", {
             Text = string.upper(titleText),
             Font = Enum.Font.GothamBold,
-            TextSize = 12,
+            TextSize = 13,
             TextColor3 = Skid.Theme.Text,
-            Size = UDim2.new(1, 0, 0.5, 0),
+            Size = UDim2.new(1, 0, 0.4, 0),
             Position = UDim2.new(0, 0, 0.15, 0),
             TextXAlignment = Enum.TextXAlignment.Center,
-            BackgroundTransparency = 1
+            BackgroundTransparency = 1,
+            ZIndex = 1002
         }),
         Create("TextLabel", {
-            Text = "LOADING ENGINE...",
-            Font = Enum.Font.Gotham,
+            Text = "INITIALIZING SCRIPT...",
+            Font = Enum.Font.GothamMedium,
             TextSize = 9,
-            TextColor3 = Skid.Theme.Muted,
+            TextColor3 = Skid.Theme.GreenLoading,
             Size = UDim2.new(1, 0, 0.3, 0),
             Position = UDim2.new(0, 0, 0.55, 0),
             TextXAlignment = Enum.TextXAlignment.Center,
-            BackgroundTransparency = 1
+            BackgroundTransparency = 1,
+            ZIndex = 1002
         })
     })
 
-    -- Curveless Border Trail Line
-    local TopLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(0, 0, 0, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0 })
-    local RightLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(1, -2, 0, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0 })
-    local BottomLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(1, 0, 1, -2), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0 })
-    local LeftLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(0, 0, 1, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0 })
+    -- Sharp 1px Border Trail
+    local TopLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(0, 0, 0, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 1003 })
+    local RightLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(1, -2, 0, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 1003 })
+    local BottomLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(1, 0, 1, -2), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 1003 })
+    local LeftLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(0, 0, 1, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 1003 })
 
     task.spawn(function()
-        TweenService:Create(TopLine, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, 0, 0, 2) }):Play()
+        TweenService:Create(TopLine, TweenInfo.new(0.4, Enum.EasingStyle.Linear), { Size = UDim2.new(1, 0, 0, 2) }):Play()
+        task.wait(0.4)
+        TweenService:Create(RightLine, TweenInfo.new(0.3, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 2, 1, 0) }):Play()
         task.wait(0.3)
-        TweenService:Create(RightLine, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(0, 2, 1, 0) }):Play()
-        task.wait(0.2)
-        TweenService:Create(BottomLine, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, 0, 0, 2), Position = UDim2.new(0, 0, 1, -2) }):Play()
-        task.wait(0.3)
-        TweenService:Create(LeftLine, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(0, 2, 1, 0), Position = UDim2.new(0, 0, 0, 0) }):Play()
+        TweenService:Create(BottomLine, TweenInfo.new(0.4, Enum.EasingStyle.Linear), { Size = UDim2.new(1, 0, 0, 2), Position = UDim2.new(0, 0, 1, -2) }):Play()
+        task.wait(0.4)
+        TweenService:Create(LeftLine, TweenInfo.new(0.3, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 2, 1, 0), Position = UDim2.new(0, 0, 0, 0) }):Play()
         task.wait(0.3)
 
-        -- Fade Away Transition
-        for _, v in ipairs(Loader:GetDescendants()) do
-            if v:IsA("TextLabel") or v:IsA("Frame") then
-                TweenService:Create(v, TweenInfo.new(0.25), { BackgroundTransparency = 1, TextTransparency = 1 }):Play()
+        -- Fade Out Loading Screen
+        for _, obj in ipairs(Overlay:GetDescendants()) do
+            if obj:IsA("TextLabel") then
+                TweenService:Create(obj, TweenInfo.new(0.3), { TextTransparency = 1 }):Play()
+            elseif obj:IsA("Frame") then
+                TweenService:Create(obj, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
             end
         end
-        TweenService:Create(Loader, TweenInfo.new(0.25), { BackgroundTransparency = 1 }):Play()
-        task.wait(0.25)
-        Loader:Destroy()
-        onComplete()
+        TweenService:Create(Overlay, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
+        task.wait(0.3)
+        Overlay:Destroy()
+
+        if onComplete then onComplete() end
     end)
 end
 
 function Skid:CreateWindow(cfg)
     local titleText = type(cfg) == "table" and (cfg.Title or "SKID ENGINE") or (cfg or "SKID ENGINE")
+
     local Window = Create("Frame", {
         Name = "SkidMainWindow",
         Parent = ScreenGui,
@@ -156,7 +170,8 @@ function Skid:CreateWindow(cfg)
         Create("UIStroke", { Color = Skid.Theme.Border, Thickness = 1 })
     })
 
-    PlayLoadingScreen(titleText, function()
+    -- Trigger forced loading overlay before opening UI
+    ShowLoadingScreen(titleText, function()
         Window.Visible = true
     end)
 
@@ -251,7 +266,6 @@ function Skid:CreateWindow(cfg)
 
         local Elements = {}
 
-        -- Clean Toggle (Un-jammed, no white curve box)
         function Elements:AddToggle(idx, opts)
             local txt = opts.Text or idx
             local def = opts.Default or false
@@ -310,7 +324,6 @@ function Skid:CreateWindow(cfg)
         end
         Elements.AddCheckbox = Elements.AddToggle
 
-        -- Clean Action Button
         function Elements:AddButton(opts)
             local txt = type(opts) == "table" and opts.Text or opts
             local fn = type(opts) == "table" and (opts.Func or opts.Callback) or function() end
@@ -368,7 +381,6 @@ function Skid:CreateWindow(cfg)
             return BObj
         end
 
-        -- Clean Slider
         function Elements:AddSlider(idx, opts)
             local txt = opts.Text or idx
             local min, max = opts.Min or 0, opts.Max or 100
@@ -450,7 +462,6 @@ function Skid:CreateWindow(cfg)
             return SObj
         end
 
-        -- Clean Text Label & Divider
         function Elements:AddLabel(txt)
             local Label = Create("TextLabel", {
                 Parent = BoxContainer,
