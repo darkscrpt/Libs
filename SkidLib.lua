@@ -1,5 +1,5 @@
 -- ============================================================================
--- SKID LIB (INSTANT LOADING SCREEN FIX)
+-- SKID LIB (STABLE LOADING SCREEN & UI ENGINE)
 -- ============================================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -19,8 +19,7 @@ local Skid = {
         GreenLoading = Color3.fromRGB(59, 214, 148),
         Text = Color3.fromRGB(240, 243, 250),
         Muted = Color3.fromRGB(130, 140, 160),
-        Border = Color3.fromRGB(35, 42, 56),
-        Red = Color3.fromRGB(242, 68, 68)
+        Border = Color3.fromRGB(35, 42, 56)
     }
 }
 
@@ -78,84 +77,10 @@ local ScreenGui = Create("ScreenGui", {
     Parent = ParentContainer
 })
 
--- FORCED STANDALONE LOADING SCREEN
-local function ShowLoadingScreen(titleText, onComplete)
-    local Overlay = Create("Frame", {
-        Parent = ScreenGui,
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundColor3 = Color3.fromRGB(8, 9, 12),
-        BackgroundTransparency = 0,
-        ZIndex = 1000
-    })
-
-    local Loader = Create("Frame", {
-        Parent = Overlay,
-        Size = UDim2.new(0, 280, 0, 80),
-        Position = UDim2.new(0.5, -140, 0.5, -40),
-        BackgroundColor3 = Skid.Theme.Background,
-        BorderSizePixel = 0,
-        ZIndex = 1001
-    }, {
-        Create("UIStroke", { Color = Skid.Theme.Border, Thickness = 1 }),
-        Create("TextLabel", {
-            Text = string.upper(titleText),
-            Font = Enum.Font.GothamBold,
-            TextSize = 13,
-            TextColor3 = Skid.Theme.Text,
-            Size = UDim2.new(1, 0, 0.4, 0),
-            Position = UDim2.new(0, 0, 0.15, 0),
-            TextXAlignment = Enum.TextXAlignment.Center,
-            BackgroundTransparency = 1,
-            ZIndex = 1002
-        }),
-        Create("TextLabel", {
-            Text = "INITIALIZING SCRIPT...",
-            Font = Enum.Font.GothamMedium,
-            TextSize = 9,
-            TextColor3 = Skid.Theme.GreenLoading,
-            Size = UDim2.new(1, 0, 0.3, 0),
-            Position = UDim2.new(0, 0, 0.55, 0),
-            TextXAlignment = Enum.TextXAlignment.Center,
-            BackgroundTransparency = 1,
-            ZIndex = 1002
-        })
-    })
-
-    -- Sharp 1px Border Trail
-    local TopLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(0, 0, 0, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 1003 })
-    local RightLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(1, -2, 0, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 1003 })
-    local BottomLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(1, 0, 1, -2), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 1003 })
-    local LeftLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(0, 0, 1, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 1003 })
-
-    task.spawn(function()
-        TweenService:Create(TopLine, TweenInfo.new(0.4, Enum.EasingStyle.Linear), { Size = UDim2.new(1, 0, 0, 2) }):Play()
-        task.wait(0.4)
-        TweenService:Create(RightLine, TweenInfo.new(0.3, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 2, 1, 0) }):Play()
-        task.wait(0.3)
-        TweenService:Create(BottomLine, TweenInfo.new(0.4, Enum.EasingStyle.Linear), { Size = UDim2.new(1, 0, 0, 2), Position = UDim2.new(0, 0, 1, -2) }):Play()
-        task.wait(0.4)
-        TweenService:Create(LeftLine, TweenInfo.new(0.3, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 2, 1, 0), Position = UDim2.new(0, 0, 0, 0) }):Play()
-        task.wait(0.3)
-
-        -- Fade Out Loading Screen
-        for _, obj in ipairs(Overlay:GetDescendants()) do
-            if obj:IsA("TextLabel") then
-                TweenService:Create(obj, TweenInfo.new(0.3), { TextTransparency = 1 }):Play()
-            elseif obj:IsA("Frame") then
-                TweenService:Create(obj, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
-            end
-        end
-        TweenService:Create(Overlay, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
-        task.wait(0.3)
-        Overlay:Destroy()
-
-        if onComplete then onComplete() end
-    end)
-end
-
 function Skid:CreateWindow(cfg)
     local titleText = type(cfg) == "table" and (cfg.Title or "SKID ENGINE") or (cfg or "SKID ENGINE")
 
+    -- Main Window (Created hidden)
     local Window = Create("Frame", {
         Name = "SkidMainWindow",
         Parent = ScreenGui,
@@ -170,8 +95,70 @@ function Skid:CreateWindow(cfg)
         Create("UIStroke", { Color = Skid.Theme.Border, Thickness = 1 })
     })
 
-    -- Trigger forced loading overlay before opening UI
-    ShowLoadingScreen(titleText, function()
+    -- Loading Screen Overlay
+    local Overlay = Create("Frame", {
+        Parent = ScreenGui,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(8, 9, 12),
+        ZIndex = 2000
+    })
+
+    local Loader = Create("Frame", {
+        Parent = Overlay,
+        Size = UDim2.new(0, 280, 0, 80),
+        Position = UDim2.new(0.5, -140, 0.5, -40),
+        BackgroundColor3 = Skid.Theme.Background,
+        BorderSizePixel = 0,
+        ZIndex = 2001
+    }, {
+        Create("UIStroke", { Color = Skid.Theme.Border, Thickness = 1 }),
+        Create("TextLabel", {
+            Text = string.upper(titleText),
+            Font = Enum.Font.GothamBold,
+            TextSize = 13,
+            TextColor3 = Skid.Theme.Text,
+            Size = UDim2.new(1, 0, 0.4, 0),
+            Position = UDim2.new(0, 0, 0.15, 0),
+            TextXAlignment = Enum.TextXAlignment.Center,
+            BackgroundTransparency = 1,
+            ZIndex = 2002
+        }),
+        Create("TextLabel", {
+            Text = "INITIALIZING...",
+            Font = Enum.Font.GothamMedium,
+            TextSize = 9,
+            TextColor3 = Skid.Theme.GreenLoading,
+            Size = UDim2.new(1, 0, 0.3, 0),
+            Position = UDim2.new(0, 0, 0.55, 0),
+            TextXAlignment = Enum.TextXAlignment.Center,
+            BackgroundTransparency = 1,
+            ZIndex = 2002
+        })
+    })
+
+    -- Curveless Border Trail Lines
+    local TopLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(0, 0, 0, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 2003 })
+    local RightLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(1, -2, 0, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 2003 })
+    local BottomLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(1, 0, 1, -2), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 2003 })
+    local LeftLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(0, 0, 1, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 2003 })
+
+    -- Run Loading Sequence non-blocking
+    task.spawn(function()
+        pcall(function()
+            TopLine.Size = UDim2.new(1, 0, 0, 2)
+            task.wait(0.2)
+            RightLine.Size = UDim2.new(0, 2, 1, 0)
+            task.wait(0.2)
+            BottomLine.Size = UDim2.new(1, 0, 0, 2)
+            BottomLine.Position = UDim2.new(0, 0, 1, -2)
+            task.wait(0.2)
+            LeftLine.Size = UDim2.new(0, 2, 1, 0)
+            LeftLine.Position = UDim2.new(0, 0, 0, 0)
+            task.wait(0.3)
+        end)
+
+        -- Remove loading screen and display main UI
+        Overlay:Destroy()
         Window.Visible = true
     end)
 
@@ -316,8 +303,8 @@ function Skid:CreateWindow(cfg)
             local Btn = Create("TextButton", { Parent = Row, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "" })
             Btn.MouseButton1Click:Connect(function()
                 TObj:SetValue(not TObj.Value)
-                TweenService:Create(Switch, TweenInfo.new(0.12), { BackgroundColor3 = TObj.Value and Skid.Theme.Accent or Skid.Theme.Sidebar }):Play()
-                TweenService:Create(Knob, TweenInfo.new(0.12), { Position = TObj.Value and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4) }):Play()
+                Switch.BackgroundColor3 = TObj.Value and Skid.Theme.Accent or Skid.Theme.Sidebar
+                Knob.Position = TObj.Value and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4)
             end)
 
             return TObj
@@ -550,11 +537,13 @@ function Skid:CreateWindow(cfg)
             for _, c in ipairs(ContentHolder:GetChildren()) do c.Visible = false end
             for _, b in ipairs(Sidebar:GetChildren()) do
                 if b:IsA("ImageButton") then
-                    TweenService:Create(b, TweenInfo.new(0.15), { BackgroundTransparency = 1, ImageColor3 = Skid.Theme.Muted }):Play()
+                    b.BackgroundTransparency = 1
+                    b.ImageColor3 = Skid.Theme.Muted
                 end
             end
             TabContainer.Visible = true
-            TweenService:Create(TabBtn, TweenInfo.new(0.15), { BackgroundTransparency = 0, ImageColor3 = Skid.Theme.Accent }):Play()
+            TabBtn.BackgroundTransparency = 0
+            TabBtn.ImageColor3 = Skid.Theme.Accent
         end
 
         TabBtn.MouseButton1Click:Connect(Select)
