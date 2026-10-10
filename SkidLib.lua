@@ -1,5 +1,5 @@
 -- ============================================================================
--- SKID LIB (STABLE LOADING SCREEN & UI ENGINE)
+-- SKID LIB (SMOOTH TWEENED BORDER LOADER & UI ENGINE)
 -- ============================================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -95,16 +95,9 @@ function Skid:CreateWindow(cfg)
         Create("UIStroke", { Color = Skid.Theme.Border, Thickness = 1 })
     })
 
-    -- Loading Screen Overlay
-    local Overlay = Create("Frame", {
-        Parent = ScreenGui,
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundColor3 = Color3.fromRGB(8, 9, 12),
-        ZIndex = 2000
-    })
-
+    -- Standalone Loading Screen (No black background screen behind it)
     local Loader = Create("Frame", {
-        Parent = Overlay,
+        Parent = ScreenGui,
         Size = UDim2.new(0, 280, 0, 80),
         Position = UDim2.new(0.5, -140, 0.5, -40),
         BackgroundColor3 = Skid.Theme.Background,
@@ -142,23 +135,32 @@ function Skid:CreateWindow(cfg)
     local BottomLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(1, 0, 1, -2), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 2003 })
     local LeftLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(0, 0, 1, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 2003 })
 
-    -- Run Loading Sequence non-blocking
+    -- Slower, Smooth Tweening Animation Sequence
     task.spawn(function()
-        pcall(function()
-            TopLine.Size = UDim2.new(1, 0, 0, 2)
-            task.wait(0.2)
-            RightLine.Size = UDim2.new(0, 2, 1, 0)
-            task.wait(0.2)
-            BottomLine.Size = UDim2.new(1, 0, 0, 2)
-            BottomLine.Position = UDim2.new(0, 0, 1, -2)
-            task.wait(0.2)
-            LeftLine.Size = UDim2.new(0, 2, 1, 0)
-            LeftLine.Position = UDim2.new(0, 0, 0, 0)
-            task.wait(0.3)
-        end)
+        local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
-        -- Remove loading screen and display main UI
-        Overlay:Destroy()
+        TweenService:Create(TopLine, tweenInfo, { Size = UDim2.new(1, 0, 0, 2) }):Play()
+        task.wait(0.6)
+        TweenService:Create(RightLine, tweenInfo, { Size = UDim2.new(0, 2, 1, 0) }):Play()
+        task.wait(0.6)
+        TweenService:Create(BottomLine, tweenInfo, { Size = UDim2.new(1, 0, 0, 2), Position = UDim2.new(0, 0, 1, -2) }):Play()
+        task.wait(0.6)
+        TweenService:Create(LeftLine, tweenInfo, { Size = UDim2.new(0, 2, 1, 0), Position = UDim2.new(0, 0, 0, 0) }):Play()
+        task.wait(0.7)
+
+        -- Smooth Fade Out Loader
+        for _, obj in ipairs(Loader:GetDescendants()) do
+            if obj:IsA("TextLabel") then
+                TweenService:Create(obj, TweenInfo.new(0.4), { TextTransparency = 1 }):Play()
+            elseif obj:IsA("Frame") then
+                TweenService:Create(obj, TweenInfo.new(0.4), { BackgroundTransparency = 1 }):Play()
+            end
+        end
+        TweenService:Create(Loader, TweenInfo.new(0.4), { BackgroundTransparency = 1 }):Play()
+        task.wait(0.4)
+        Loader:Destroy()
+
+        -- Show Main Window
         Window.Visible = true
     end)
 
@@ -303,8 +305,8 @@ function Skid:CreateWindow(cfg)
             local Btn = Create("TextButton", { Parent = Row, Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, Text = "" })
             Btn.MouseButton1Click:Connect(function()
                 TObj:SetValue(not TObj.Value)
-                Switch.BackgroundColor3 = TObj.Value and Skid.Theme.Accent or Skid.Theme.Sidebar
-                Knob.Position = TObj.Value and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4)
+                TweenService:Create(Switch, TweenInfo.new(0.15), { BackgroundColor3 = TObj.Value and Skid.Theme.Accent or Skid.Theme.Sidebar }):Play()
+                TweenService:Create(Knob, TweenInfo.new(0.15), { Position = TObj.Value and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4) }):Play()
             end)
 
             return TObj
@@ -560,7 +562,7 @@ function Skid:CreateWindow(cfg)
     end
 
     function Skid:Unload() ScreenGui:Destroy() end
-    return TabSystem
+    return TabSystem in
 end
 
 return Skid
