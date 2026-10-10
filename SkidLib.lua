@@ -1,5 +1,5 @@
 -- ============================================================================
--- SKID LIB (SMOOTH TWEENED BORDER LOADER & UI ENGINE)
+-- SKID LIB (COMPACT PURE UI LIBRARY WITH CLEAN BORDER LOADER)
 -- ============================================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -80,12 +80,12 @@ local ScreenGui = Create("ScreenGui", {
 function Skid:CreateWindow(cfg)
     local titleText = type(cfg) == "table" and (cfg.Title or "SKID ENGINE") or (cfg or "SKID ENGINE")
 
-    -- Main Window (Created hidden)
+    -- Compact Main Window (Hidden during loader)
     local Window = Create("Frame", {
         Name = "SkidMainWindow",
         Parent = ScreenGui,
-        Size = UDim2.new(0, 540, 0, 360),
-        Position = UDim2.new(0.5, -270, 0.5, -180),
+        Size = UDim2.new(0, 420, 0, 280),
+        Position = UDim2.new(0.5, -210, 0.5, -140),
         BackgroundColor3 = Skid.Theme.Background,
         BorderSizePixel = 0,
         Visible = false,
@@ -95,12 +95,13 @@ function Skid:CreateWindow(cfg)
         Create("UIStroke", { Color = Skid.Theme.Border, Thickness = 1 })
     })
 
-    -- Standalone Loading Screen (No black background screen behind it)
+    -- Transparent Loader (No black backdrop screen behind it)
     local Loader = Create("Frame", {
         Parent = ScreenGui,
-        Size = UDim2.new(0, 280, 0, 80),
-        Position = UDim2.new(0.5, -140, 0.5, -40),
+        Size = UDim2.new(0, 260, 0, 70),
+        Position = UDim2.new(0.5, -130, 0.5, -35),
         BackgroundColor3 = Skid.Theme.Background,
+        BackgroundTransparency = 0.1,
         BorderSizePixel = 0,
         ZIndex = 2001
     }, {
@@ -108,7 +109,7 @@ function Skid:CreateWindow(cfg)
         Create("TextLabel", {
             Text = string.upper(titleText),
             Font = Enum.Font.GothamBold,
-            TextSize = 13,
+            TextSize = 12,
             TextColor3 = Skid.Theme.Text,
             Size = UDim2.new(1, 0, 0.4, 0),
             Position = UDim2.new(0, 0, 0.15, 0),
@@ -117,9 +118,9 @@ function Skid:CreateWindow(cfg)
             ZIndex = 2002
         }),
         Create("TextLabel", {
-            Text = "INITIALIZING...",
+            Text = "LOADING...",
             Font = Enum.Font.GothamMedium,
-            TextSize = 9,
+            TextSize = 8,
             TextColor3 = Skid.Theme.GreenLoading,
             Size = UDim2.new(1, 0, 0.3, 0),
             Position = UDim2.new(0, 0, 0.55, 0),
@@ -135,20 +136,20 @@ function Skid:CreateWindow(cfg)
     local BottomLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 0, 0, 2), Position = UDim2.new(1, 0, 1, -2), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 2003 })
     local LeftLine = Create("Frame", { Parent = Loader, Size = UDim2.new(0, 2, 0, 0), Position = UDim2.new(0, 0, 1, 0), BackgroundColor3 = Skid.Theme.GreenLoading, BorderSizePixel = 0, ZIndex = 2003 })
 
-    -- Slower, Smooth Tweening Animation Sequence
+    -- Slow, Smooth Tweening Loader Sequence
     task.spawn(function()
-        local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local tweenInfo = TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
         TweenService:Create(TopLine, tweenInfo, { Size = UDim2.new(1, 0, 0, 2) }):Play()
-        task.wait(0.6)
-        TweenService:Create(RightLine, tweenInfo, { Size = UDim2.new(0, 2, 1, 0) }):Play()
-        task.wait(0.6)
-        TweenService:Create(BottomLine, tweenInfo, { Size = UDim2.new(1, 0, 0, 2), Position = UDim2.new(0, 0, 1, -2) }):Play()
-        task.wait(0.6)
-        TweenService:Create(LeftLine, tweenInfo, { Size = UDim2.new(0, 2, 1, 0), Position = UDim2.new(0, 0, 0, 0) }):Play()
         task.wait(0.7)
+        TweenService:Create(RightLine, tweenInfo, { Size = UDim2.new(0, 2, 1, 0) }):Play()
+        task.wait(0.7)
+        TweenService:Create(BottomLine, tweenInfo, { Size = UDim2.new(1, 0, 0, 2), Position = UDim2.new(0, 0, 1, -2) }):Play()
+        task.wait(0.7)
+        TweenService:Create(LeftLine, tweenInfo, { Size = UDim2.new(0, 2, 1, 0), Position = UDim2.new(0, 0, 0, 0) }):Play()
+        task.wait(0.8)
 
-        -- Smooth Fade Out Loader
+        -- Smooth Fade Out
         for _, obj in ipairs(Loader:GetDescendants()) do
             if obj:IsA("TextLabel") then
                 TweenService:Create(obj, TweenInfo.new(0.4), { TextTransparency = 1 }):Play()
@@ -160,13 +161,12 @@ function Skid:CreateWindow(cfg)
         task.wait(0.4)
         Loader:Destroy()
 
-        -- Show Main Window
         Window.Visible = true
     end)
 
     local Header = Create("Frame", {
         Parent = Window,
-        Size = UDim2.new(1, 0, 0, 28),
+        Size = UDim2.new(1, 0, 0, 26),
         BackgroundColor3 = Skid.Theme.Sidebar,
         BorderSizePixel = 0
     }, {
@@ -190,8 +190,8 @@ function Skid:CreateWindow(cfg)
         Font = Enum.Font.GothamBold,
         TextSize = 16,
         TextColor3 = Skid.Theme.Muted,
-        Size = UDim2.new(0, 28, 0, 28),
-        Position = UDim2.new(1, -28, 0, 0),
+        Size = UDim2.new(0, 26, 0, 26),
+        Position = UDim2.new(1, -26, 0, 0),
         BackgroundTransparency = 1
     })
     CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
@@ -200,8 +200,8 @@ function Skid:CreateWindow(cfg)
 
     local Sidebar = Create("Frame", {
         Parent = Window,
-        Size = UDim2.new(0, 38, 1, -28),
-        Position = UDim2.new(0, 0, 0, 28),
+        Size = UDim2.new(0, 36, 1, -26),
+        Position = UDim2.new(0, 0, 0, 26),
         BackgroundColor3 = Skid.Theme.Sidebar,
         BorderSizePixel = 0
     }, {
@@ -212,8 +212,8 @@ function Skid:CreateWindow(cfg)
 
     local ContentHolder = Create("Frame", {
         Parent = Window,
-        Size = UDim2.new(1, -38, 1, -28),
-        Position = UDim2.new(0, 38, 0, 28),
+        Size = UDim2.new(1, -36, 1, -26),
+        Position = UDim2.new(0, 36, 0, 26),
         BackgroundTransparency = 1
     })
 
@@ -222,7 +222,7 @@ function Skid:CreateWindow(cfg)
     local function HelperGroupbox(parentContainer, name)
         local GB = Create("Frame", {
             Parent = parentContainer,
-            Size = UDim2.new(1, 0, 0, 26),
+            Size = UDim2.new(1, 0, 0, 24),
             BackgroundColor3 = Skid.Theme.Groupbox,
             BorderSizePixel = 0
         }, {
@@ -233,24 +233,24 @@ function Skid:CreateWindow(cfg)
                 Font = Enum.Font.GothamBold,
                 TextSize = 9,
                 TextColor3 = Skid.Theme.Accent,
-                Position = UDim2.new(0, 8, 0, 4),
-                Size = UDim2.new(1, -16, 0, 14),
+                Position = UDim2.new(0, 8, 0, 3),
+                Size = UDim2.new(1, -16, 0, 12),
                 TextXAlignment = Enum.TextXAlignment.Left,
                 BackgroundTransparency = 1
             }),
             Create("Frame", {
                 Name = "Container",
-                Size = UDim2.new(1, -16, 1, -20),
-                Position = UDim2.new(0, 8, 0, 18),
+                Size = UDim2.new(1, -16, 1, -18),
+                Position = UDim2.new(0, 8, 0, 16),
                 BackgroundTransparency = 1
             }, {
-                Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) })
+                Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5) })
             })
         })
 
         local BoxContainer = GB.Container
         BoxContainer.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            GB.Size = UDim2.new(1, 0, 0, BoxContainer.UIListLayout.AbsoluteContentSize.Y + 24)
+            GB.Size = UDim2.new(1, 0, 0, BoxContainer.UIListLayout.AbsoluteContentSize.Y + 22)
         end)
 
         local Elements = {}
@@ -274,7 +274,7 @@ function Skid:CreateWindow(cfg)
 
             local Row = Create("Frame", {
                 Parent = BoxContainer,
-                Size = UDim2.new(1, 0, 0, 18),
+                Size = UDim2.new(1, 0, 0, 16),
                 BackgroundTransparency = 1
             }, {
                 Create("TextLabel", {
@@ -290,15 +290,15 @@ function Skid:CreateWindow(cfg)
 
             local Switch = Create("Frame", {
                 Parent = Row,
-                Size = UDim2.new(0, 22, 0, 12),
-                Position = UDim2.new(1, -22, 0.5, -6),
+                Size = UDim2.new(0, 20, 0, 10),
+                Position = UDim2.new(1, -20, 0.5, -5),
                 BackgroundColor3 = def and Skid.Theme.Accent or Skid.Theme.Sidebar
             }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 
             local Knob = Create("Frame", {
                 Parent = Switch,
-                Size = UDim2.new(0, 8, 0, 8),
-                Position = def and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4),
+                Size = UDim2.new(0, 6, 0, 6),
+                Position = def and UDim2.new(1, -8, 0.5, -3) or UDim2.new(0, 2, 0.5, -3),
                 BackgroundColor3 = Skid.Theme.Text
             }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 
@@ -306,7 +306,7 @@ function Skid:CreateWindow(cfg)
             Btn.MouseButton1Click:Connect(function()
                 TObj:SetValue(not TObj.Value)
                 TweenService:Create(Switch, TweenInfo.new(0.15), { BackgroundColor3 = TObj.Value and Skid.Theme.Accent or Skid.Theme.Sidebar }):Play()
-                TweenService:Create(Knob, TweenInfo.new(0.15), { Position = TObj.Value and UDim2.new(1, -10, 0.5, -4) or UDim2.new(0, 2, 0.5, -4) }):Play()
+                TweenService:Create(Knob, TweenInfo.new(0.15), { Position = TObj.Value and UDim2.new(1, -8, 0.5, -3) or UDim2.new(0, 2, 0.5, -3) }):Play()
             end)
 
             return TObj
@@ -319,7 +319,7 @@ function Skid:CreateWindow(cfg)
 
             local Frame = Create("Frame", {
                 Parent = BoxContainer,
-                Size = UDim2.new(1, 0, 0, 20),
+                Size = UDim2.new(1, 0, 0, 18),
                 BackgroundColor3 = Skid.Theme.Sidebar,
                 BorderSizePixel = 0
             }, {
@@ -341,11 +341,11 @@ function Skid:CreateWindow(cfg)
 
             local BObj = {}
             function BObj:AddButton(subOpts)
-                Frame.Size = UDim2.new(0.48, 0, 0, 20)
+                Frame.Size = UDim2.new(0.48, 0, 0, 18)
                 subOpts.Text = subOpts.Text or "Sub"
                 local subFrame = Create("Frame", {
                     Parent = BoxContainer,
-                    Size = UDim2.new(0.48, 0, 0, 20),
+                    Size = UDim2.new(0.48, 0, 0, 18),
                     Position = UDim2.new(0.52, 0, 0, 0),
                     BackgroundColor3 = Skid.Theme.Sidebar,
                     BorderSizePixel = 0
@@ -390,7 +390,7 @@ function Skid:CreateWindow(cfg)
 
             local Container = Create("Frame", {
                 Parent = BoxContainer,
-                Size = UDim2.new(1, 0, 0, 24),
+                Size = UDim2.new(1, 0, 0, 22),
                 BackgroundTransparency = 1
             }, {
                 Create("TextLabel", {
@@ -398,7 +398,7 @@ function Skid:CreateWindow(cfg)
                     Font = Enum.Font.Gotham,
                     TextSize = 10,
                     TextColor3 = Skid.Theme.Text,
-                    Size = UDim2.new(0.5, 0, 0, 12),
+                    Size = UDim2.new(0.5, 0, 0, 10),
                     TextXAlignment = Enum.TextXAlignment.Left,
                     BackgroundTransparency = 1
                 })
@@ -411,7 +411,7 @@ function Skid:CreateWindow(cfg)
                 TextSize = 10,
                 TextColor3 = Skid.Theme.Muted,
                 Position = UDim2.new(0.5, 0, 0, 0),
-                Size = UDim2.new(0.5, 0, 0, 12),
+                Size = UDim2.new(0.5, 0, 0, 10),
                 TextXAlignment = Enum.TextXAlignment.Right,
                 BackgroundTransparency = 1
             })
@@ -419,7 +419,7 @@ function Skid:CreateWindow(cfg)
             local Track = Create("Frame", {
                 Parent = Container,
                 Size = UDim2.new(1, 0, 0, 4),
-                Position = UDim2.new(0, 0, 0, 16),
+                Position = UDim2.new(0, 0, 0, 14),
                 BackgroundColor3 = Skid.Theme.Sidebar
             }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
 
@@ -458,7 +458,7 @@ function Skid:CreateWindow(cfg)
                 Font = Enum.Font.Gotham,
                 TextSize = 10,
                 TextColor3 = Skid.Theme.Muted,
-                Size = UDim2.new(1, 0, 0, 14),
+                Size = UDim2.new(1, 0, 0, 12),
                 TextXAlignment = Enum.TextXAlignment.Left,
                 BackgroundTransparency = 1
             })
@@ -477,7 +477,7 @@ function Skid:CreateWindow(cfg)
     function TabSystem:AddTab(tabName, iconName)
         local TabBtn = Create("ImageButton", {
             Parent = Sidebar,
-            Size = UDim2.new(0, 24, 0, 24),
+            Size = UDim2.new(0, 22, 0, 22),
             BackgroundColor3 = Skid.Theme.Groupbox,
             BackgroundTransparency = 1,
             Image = Skid.Icons[iconName] or Skid.Icons[string.lower(iconName or "")] or "",
@@ -489,7 +489,7 @@ function Skid:CreateWindow(cfg)
                 BackgroundTransparency = 1,
                 Text = string.sub(tabName or "T", 1, 1),
                 Font = Enum.Font.GothamBold,
-                TextSize = 11,
+                TextSize = 10,
                 TextColor3 = Skid.Theme.Muted,
                 Visible = (Skid.Icons[iconName] == nil)
             })
@@ -511,8 +511,8 @@ function Skid:CreateWindow(cfg)
             ScrollBarImageColor3 = Skid.Theme.Border,
             CanvasSize = UDim2.new(0, 0, 0, 0)
         }, {
-            Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) }),
-            Create("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 4) })
+            Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5) }),
+            Create("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 3) })
         })
 
         local RightScroll = Create("ScrollingFrame", {
@@ -524,15 +524,15 @@ function Skid:CreateWindow(cfg)
             ScrollBarImageColor3 = Skid.Theme.Border,
             CanvasSize = UDim2.new(0, 0, 0, 0)
         }, {
-            Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) }),
-            Create("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 6) })
+            Create("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5) }),
+            Create("UIPadding", { PaddingTop = UDim.new(0, 5), PaddingLeft = UDim.new(0, 3), PaddingRight = UDim.new(0, 5) })
         })
 
         LeftScroll.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            LeftScroll.CanvasSize = UDim2.new(0, 0, 0, LeftScroll.UIListLayout.AbsoluteContentSize.Y + 12)
+            LeftScroll.CanvasSize = UDim2.new(0, 0, 0, LeftScroll.UIListLayout.AbsoluteContentSize.Y + 10)
         end)
         RightScroll.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            RightScroll.CanvasSize = UDim2.new(0, 0, 0, RightScroll.UIListLayout.AbsoluteContentSize.Y + 12)
+            RightScroll.CanvasSize = UDim2.new(0, 0, 0, RightScroll.UIListLayout.AbsoluteContentSize.Y + 10)
         end)
 
         local function Select()
@@ -562,7 +562,7 @@ function Skid:CreateWindow(cfg)
     end
 
     function Skid:Unload() ScreenGui:Destroy() end
-    return TabSystem in
+    return TabSystem
 end
 
 return Skid
